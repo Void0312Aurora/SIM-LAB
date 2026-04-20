@@ -1,0 +1,20 @@
+{
+  "overlay_id": "chengdu_scu_jiangan_campus_core_v1",
+  "display_name": "SCU Jiang'an Campus Core Clip v1",
+  "coordinate_space": "local_meters",
+  "notes": [
+    "Manual approximation for the current engineering bbox.",
+    "Intended to keep the named Jiang'an campus core buildings while removing obvious outside-space bleed.",
+    "This is not an official campus cadastral boundary."
+  ],
+  "reference_sources": [
+    "https://dzb.scu.edu.cn/info/1025/1012.htm"
+  ],
+  "polygon": [
+    [-560.0, -200.0],
+    [120.0, -200.0],
+    [120.0, 560.0],
+    [-560.0, 560.0],
+    [-560.0, -200.0]
+  ]
+}

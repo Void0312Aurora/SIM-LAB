@@ -23,6 +23,12 @@ HIGHWAY_WIDTHS_M = {
     "living_street": 6.0,
     "service": 6.0,
     "unclassified": 7.0,
+    "pedestrian": 5.0,
+    "footway": 3.0,
+    "path": 2.5,
+    "steps": 2.5,
+    "cycleway": 3.0,
+    "track": 4.0,
 }
 
 
@@ -103,12 +109,11 @@ def _reset_feature_index(gdf):
     return df
 
 
-def _project_to_local_origin(edges_gdf, buildings_gdf) -> tuple[float, float]:
+def _project_to_local_origin(*frames) -> tuple[float, float]:
     bounds = []
-    if not edges_gdf.empty:
-        bounds.append(edges_gdf.total_bounds)
-    if not buildings_gdf.empty:
-        bounds.append(buildings_gdf.total_bounds)
+    for frame in frames:
+        if frame is not None and not frame.empty:
+            bounds.append(frame.total_bounds)
     if not bounds:
         raise ValueError("No roads or buildings were retrieved for the configured area")
     minx = min(item[0] for item in bounds)
@@ -118,12 +123,28 @@ def _project_to_local_origin(edges_gdf, buildings_gdf) -> tuple[float, float]:
     return ((minx + maxx) / 2.0, (miny + maxy) / 2.0)
 
 
-def _serialize_roads(edges_gdf, *, origin_x: float, origin_y: float) -> list[dict[str, Any]]:
+def _serialize_roads(
+    edges_gdf,
+    *,
+    origin_x: float,
+    origin_y: float,
+    network_role: str,
+) -> list[dict[str, Any]]:
     roads: list[dict[str, Any]] = []
+    seen_geometry_keys: set[tuple[tuple[float, float], ...]] = set()
     for row in edges_gdf.reset_index().itertuples(index=False):
         geometry = getattr(row, "geometry", None)
         if not isinstance(geometry, (LineString, MultiLineString)):
             continue
+        centerline = linestring_xy(
+            geometry,
+            origin_x=origin_x,
+            origin_y=origin_y,
+        )
+        geometry_key = _canonical_linestring_key(centerline)
+        if geometry_key in seen_geometry_keys:
+            continue
+        seen_geometry_keys.add(geometry_key)
         highway_class = _normalize_highway_class(getattr(row, "highway", None))
         width_m = _estimate_road_width(highway_class, getattr(row, "width", None))
         osmid = _stringify(getattr(row, "osmid", None)) or f"{row.u}-{row.v}-{row.key}"
@@ -132,26 +153,29 @@ def _serialize_roads(edges_gdf, *, origin_x: float, origin_y: float) -> list[dic
                 "id": f"road_osm_{row.u}_{row.v}_{row.key}",
                 "source_record_id": osmid,
                 "class": highway_class,
+                "network_role": network_role,
                 "name": _stringify(getattr(row, "name", None)),
-                "centerline": linestring_xy(
-                    geometry,
-                    origin_x=origin_x,
-                    origin_y=origin_y,
-                ),
+                "centerline": centerline,
                 "length_m": round(float(getattr(row, "length", geometry.length)), 2),
                 "lanes": _extract_int(getattr(row, "lanes", None)),
                 "width_m": width_m,
-                "is_vehicle_accessible": True,
-                "is_pedestrian_accessible": _is_pedestrian_accessible(highway_class),
+                "is_vehicle_accessible": network_role == "drive",
+                "is_pedestrian_accessible": network_role == "walk" or _is_pedestrian_accessible(highway_class),
                 "source": {
                     "provider": "OpenStreetMap",
-                    "dataset": "OSM road graph via OSMnx",
+                    "dataset": "OSM %s graph via OSMnx" % network_role,
                     "record_id": osmid,
                 },
                 "confidence": 1.0,
             }
         )
     return roads
+
+
+def _canonical_linestring_key(points: list[list[float]]) -> tuple[tuple[float, float], ...]:
+    normalized = tuple((round(point[0], 3), round(point[1], 3)) for point in points if len(point) >= 2)
+    reversed_normalized = tuple(reversed(normalized))
+    return min(normalized, reversed_normalized)
 
 
 def _serialize_buildings(buildings_gdf, *, origin_x: float, origin_y: float) -> list[dict[str, Any]]:
@@ -204,30 +228,57 @@ def normalize_osm_bbox(
 ) -> Path:
     configure_osmnx(config, raw_root=raw_root)
 
-    road_graph = fetch_road_graph(config)
+    drive_graph = fetch_road_graph(config, network_type=config.network_type)
+    walk_graph = None
+    if config.include_walk_network and config.walk_network_type and config.walk_network_type != config.network_type:
+        walk_graph = fetch_road_graph(config, network_type=config.walk_network_type)
     building_features = fetch_buildings(config)
 
-    road_graph_proj = ox.projection.project_graph(road_graph)
+    drive_graph_proj = ox.projection.project_graph(drive_graph)
+    walk_graph_proj = ox.projection.project_graph(walk_graph) if walk_graph is not None else None
     buildings_proj = ox.projection.project_gdf(building_features)
-    _, edges_gdf = ox.convert.graph_to_gdfs(
-        road_graph_proj,
+    _, drive_edges_gdf = ox.convert.graph_to_gdfs(
+        drive_graph_proj,
         nodes=True,
         edges=True,
         fill_edge_geometry=True,
     )
+    walk_edges_gdf = None
+    if walk_graph_proj is not None:
+        _, walk_edges_gdf = ox.convert.graph_to_gdfs(
+            walk_graph_proj,
+            nodes=True,
+            edges=True,
+            fill_edge_geometry=True,
+        )
 
-    origin_x, origin_y = _project_to_local_origin(edges_gdf, buildings_proj)
+    origin_x, origin_y = _project_to_local_origin(drive_edges_gdf, walk_edges_gdf, buildings_proj)
     city_dir = normalized_root / config.city_id
     city_dir.mkdir(parents=True, exist_ok=True)
 
-    roads = _serialize_roads(edges_gdf, origin_x=origin_x, origin_y=origin_y)
+    roads = _serialize_roads(
+        drive_edges_gdf,
+        origin_x=origin_x,
+        origin_y=origin_y,
+        network_role="drive",
+    )
+    walk_roads = (
+        _serialize_roads(
+            walk_edges_gdf,
+            origin_x=origin_x,
+            origin_y=origin_y,
+            network_role="walk",
+        )
+        if walk_edges_gdf is not None
+        else []
+    )
     buildings = _serialize_buildings(buildings_proj, origin_x=origin_x, origin_y=origin_y)
 
     manifest = {
         "schema_version": schema_version,
         "city_id": config.city_id,
         "display_name": config.display_name,
-        "local_crs": str(edges_gdf.crs or buildings_proj.crs),
+        "local_crs": str(drive_edges_gdf.crs or buildings_proj.crs),
         "origin": {
             "x": round(origin_x, 3),
             "y": round(origin_y, 3),
@@ -245,6 +296,7 @@ def normalize_osm_bbox(
         "compiled_at": utc_now_iso(),
         "layers": {
             "roads": "roads.json",
+            "roads_walk": "roads_walk.json",
             "pedestrian_areas": "pedestrian_areas.json",
             "buildings": "buildings.json",
             "landuse": "landuse.json",
@@ -254,6 +306,7 @@ def normalize_osm_bbox(
         },
         "stats": {
             "road_count": len(roads),
+            "walk_road_count": len(walk_roads),
             "building_count": len(buildings),
         },
     }
@@ -274,6 +327,7 @@ def normalize_osm_bbox(
 
     write_json(city_dir / "city_manifest.json", manifest)
     write_json(city_dir / "roads.json", roads)
+    write_json(city_dir / "roads_walk.json", walk_roads)
     write_json(city_dir / "buildings.json", buildings)
     write_json(city_dir / "pedestrian_areas.json", [])
     write_json(city_dir / "landuse.json", [])

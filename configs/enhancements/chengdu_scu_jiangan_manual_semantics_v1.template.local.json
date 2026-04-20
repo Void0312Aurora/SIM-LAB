@@ -1,0 +1,22 @@
+{
+  "bundle_id": "chengdu_scu_jiangan_manual_semantics_v1",
+  "display_name": "SCU Jiang'an Manual Semantics v1",
+  "coordinate_space": "local_meters",
+  "notes": [
+    "Template for manually curated research enhancements.",
+    "Use this for hand-added gates, POI, barriers, landuse patches, or walk-route corrections."
+  ],
+  "source": {
+    "provider": "Urban Sim Lab Manual Research",
+    "dataset": "Hand-authored local semantics",
+    "license": "Project internal research"
+  },
+  "layers": {
+    "roads": [],
+    "roads_walk": [],
+    "pedestrian_areas": [],
+    "landuse": [],
+    "poi": [],
+    "barriers": []
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "bundle_id": "chengdu_scu_jiangan_manual_semantics_v1",
+  "display_name": "SCU Jiang'an Manual Semantics v1",
+  "coordinate_space": "local_meters",
+  "notes": [
+    "Hand-authored semantic anchors for the Jiang'an core MVP.",
+    "These records are meant to seed runtime zones, props, and scenario entry points.",
+    "Coordinates are approximate local-meter placements based on the current TianDiTu reference mosaic and existing campus POI/building anchors."
+  ],
+  "source": {
+    "provider": "Urban Sim Lab Manual Research",
+    "dataset": "Hand-authored local semantics",
+    "license": "Project internal research"
+  },
+  "layers": {
+    "roads": [],
+    "roads_walk": [],
+    "pedestrian_areas": [],
+    "landuse": [],
+    "poi": [
+      {
+        "id": "poi_manual_safe_library_plaza",
+        "class": "manual_semantic_anchor",
+        "name": "Library Safe Zone",
+        "position": {
+          "x": -389.382,
+          "z": -126.33
+        },
+        "confidence": 0.64,
+        "runtime_zone": {
+          "id": "zone_safe_library_plaza",
+          "class": "safe_zone",
+          "shape": "point_hint",
+          "radius_m": 42.0
+        },
+        "runtime_prop": {
+          "id": "prop_safe_library_plaza",
+          "class": "safe_zone_marker",
+          "variant": "Library Safe Zone",
+          "scale_x": 1.4,
+          "scale_y": 1.0,
+          "scale_z": 1.4,
+          "blocks_movement": false
+        }
+      },
+      {
+        "id": "poi_manual_zone_academic_computing",
+        "class": "manual_semantic_anchor",
+        "name": "Academic Computing Cluster",
+        "position": {
+          "x": -208.196,
+          "z": 2.959
+        },
+        "confidence": 0.61,
+        "runtime_zone": {
+          "id": "zone_academic_computing",
+          "class": "high_density_area",
+          "shape": "point_hint",
+          "radius_m": 36.0
+        }
+      },
+      {
+        "id": "poi_manual_zone_law_school",
+        "class": "manual_semantic_anchor",
+        "name": "Law School Cluster",
+        "position": {
+          "x": -9.648,
+          "z": 143.735
+        },
+        "confidence": 0.61,
+        "runtime_zone": {
+          "id": "zone_law_school",
+          "class": "high_density_area",
+          "shape": "point_hint",
+          "radius_m": 34.0
+        }
+      },
+      {
+        "id": "poi_manual_outbreak_sports_center",
+        "class": "manual_semantic_anchor",
+        "name": "Sports Center Outbreak Origin",
+        "position": {
+          "x": -69.66,
+          "z": 321.206
+        },
+        "confidence": 0.58,
+        "runtime_zone": {
+          "id": "zone_outbreak_sports_center",
+          "class": "outbreak_origin",
+          "shape": "point_hint",
+          "radius_m": 26.0
+        },
+        "runtime_prop": {
+          "id": "prop_outbreak_sports_center",
+          "class": "outbreak_marker",
+          "variant": "Sports Center Outbreak",
+          "scale_x": 1.2,
+          "scale_y": 1.0,
+          "scale_z": 1.2,
+          "blocks_movement": false
+        }
+      },
+      {
+        "id": "poi_manual_checkpoint_south_gate",
+        "class": "manual_semantic_anchor",
+        "name": "South Gate Checkpoint",
+        "position": {
+          "x": -132.22,
+          "z": -440.386
+        },
+        "confidence": 0.57,
+        "runtime_zone": {
+          "id": "zone_checkpoint_south_gate",
+          "class": "military_control",
+          "shape": "point_hint",
+          "radius_m": 24.0
+        },
+        "runtime_prop": {
+          "id": "prop_checkpoint_south_gate",
+          "class": "checkpoint_marker",
+          "variant": "South Gate Checkpoint",
+          "scale_x": 1.2,
+          "scale_y": 1.0,
+          "scale_z": 1.2,
+          "blocks_movement": false
+        }
+      },
+      {
+        "id": "poi_manual_checkpoint_east_gate",
+        "class": "manual_semantic_anchor",
+        "name": "East Gate Checkpoint",
+        "position": {
+          "x": 106.0,
+          "z": -118.0
+        },
+        "confidence": 0.53,
+        "runtime_zone": {
+          "id": "zone_checkpoint_east_gate",
+          "class": "military_control",
+          "shape": "point_hint",
+          "radius_m": 22.0
+        },
+        "runtime_prop": {
+          "id": "prop_checkpoint_east_gate",
+          "class": "checkpoint_marker",
+          "variant": "East Gate Checkpoint",
+          "scale_x": 1.2,
+          "scale_y": 1.0,
+          "scale_z": 1.2,
+          "blocks_movement": false
+        }
+      },
+      {
+        "id": "poi_manual_gate_south",
+        "class": "manual_semantic_anchor",
+        "name": "South Campus Gate",
+        "position": {
+          "x": -148.0,
+          "z": -454.0
+        },
+        "confidence": 0.56,
+        "runtime_prop": {
+          "id": "prop_gate_south",
+          "class": "campus_gate_marker",
+          "variant": "South Campus Gate",
+          "scale_x": 1.0,
+          "scale_y": 1.4,
+          "scale_z": 1.0,
+          "blocks_movement": false
+        }
+      },
+      {
+        "id": "poi_manual_gate_east",
+        "class": "manual_semantic_anchor",
+        "name": "East Campus Gate",
+        "position": {
+          "x": 118.0,
+          "z": -136.0
+        },
+        "confidence": 0.52,
+        "runtime_prop": {
+          "id": "prop_gate_east",
+          "class": "campus_gate_marker",
+          "variant": "East Campus Gate",
+          "scale_x": 1.0,
+          "scale_y": 1.4,
+          "scale_z": 1.0,
+          "blocks_movement": false
+        }
+      },
+      {
+        "id": "poi_manual_evac_west_plaza",
+        "class": "manual_semantic_anchor",
+        "name": "West Plaza Evac Point",
+        "position": {
+          "x": -520.0,
+          "z": -36.0
+        },
+        "confidence": 0.51,
+        "runtime_zone": {
+          "id": "zone_evac_west_plaza",
+          "class": "evac_point",
+          "shape": "point_hint",
+          "radius_m": 30.0
+        },
+        "runtime_prop": {
+          "id": "prop_evac_west_plaza",
+          "class": "evac_marker",
+          "variant": "West Plaza Evac",
+          "scale_x": 1.1,
+          "scale_y": 1.0,
+          "scale_z": 1.1,
+          "blocks_movement": false
+        }
+      }
+    ],
+    "barriers": []
+  }
+}

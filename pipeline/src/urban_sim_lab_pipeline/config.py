@@ -40,6 +40,8 @@ class OSMNormalizeConfig(BaseModel):
     display_name: str = Field(min_length=1)
     bbox: BBoxConfig
     network_type: str = "drive"
+    include_walk_network: bool = True
+    walk_network_type: str | None = "walk"
     overpass_timeout: int = Field(default=180, ge=30)
     overpass_memory_mb: int | None = Field(default=1024, ge=128)
     use_cache: bool = True

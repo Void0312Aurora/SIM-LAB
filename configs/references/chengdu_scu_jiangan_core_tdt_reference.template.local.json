@@ -1,0 +1,17 @@
+{
+  "overlay_id": "chengdu_scu_jiangan_core_tdt_reference_v1",
+  "display_name": "SCU Jiang'an Core TianDiTu Reference v1",
+  "coordinate_space": "local_meters",
+  "image_path": "../../data/research/tdt/raw/chengdu_scu_jiangan_core_tdt_vector.png",
+  "anchor_bounds": {
+    "min_x": -560.0,
+    "min_y": -200.0,
+    "max_x": 120.0,
+    "max_y": 560.0
+  },
+  "opacity": 0.72,
+  "notes": [
+    "Template only. Replace image_path with a local north-up TianDiTu screenshot.",
+    "Adjust anchor_bounds after manual alignment against the normalized city preview."
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1.0",
+  "scenario_id": "scenario_chengdu_scu_jiangan_core_outbreak_mvp",
+  "map_pack_id": "pack_chengdu_scu_jiangan_core",
+  "time_of_day": "day",
+  "factions": {
+    "civilians": {
+      "count": 140,
+      "behavior_profile": "panic_default"
+    },
+    "infected": {
+      "count": 10,
+      "behavior_profile": "aggressive_noise_seek"
+    },
+    "military": {
+      "count": 12,
+      "behavior_profile": "checkpoint_response",
+      "squad_size": 4
+    }
+  },
+  "spawn_rules": [
+    {
+      "faction": "civilians",
+      "zone_id": "zone_academic_computing",
+      "count": 70,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "civilians",
+      "zone_id": "zone_law_school",
+      "count": 70,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "infected",
+      "zone_id": "zone_outbreak_sports_center",
+      "count": 10,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "military",
+      "zone_id": "zone_checkpoint_south_gate",
+      "count": 6,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "military",
+      "zone_id": "zone_checkpoint_east_gate",
+      "count": 6,
+      "distribution": "clustered"
+    }
+  ],
+  "goals": [
+    "measure_evacuation_efficiency",
+    "measure_infection_spread",
+    "observe_checkpoint_bottlenecks"
+  ]
+}

@@ -218,6 +218,7 @@ func _make_building_node(building: Dictionary) -> Node3D:
 func _make_zone_node(zone: Dictionary) -> Node3D:
 	var radius: float = max(1.0, float(zone.get("radius_m", 10.0)))
 	var center: Dictionary = zone.get("center", {"x": 0.0, "y": 0.0, "z": 0.0})
+	var zone_class := str(zone.get("class", "generic_zone"))
 
 	var mesh := CylinderMesh.new()
 	mesh.top_radius = radius
@@ -228,7 +229,7 @@ func _make_zone_node(zone: Dictionary) -> Node3D:
 	instance.name = str(zone.get("id", "Zone"))
 	instance.mesh = mesh
 	instance.position = Vector3(float(center.get("x", 0.0)), float(center.get("y", 0.0)) + 0.125, float(center.get("z", 0.0)))
-	instance.material_override = _make_standard_material(Color(0.9, 0.45, 0.2), 0.45)
+	instance.material_override = _make_standard_material(_zone_color(zone_class), 0.45)
 	return instance
 
 
@@ -303,6 +304,7 @@ func _make_prop_node(prop: Dictionary) -> Node3D:
 	var transform_data: Dictionary = prop.get("transform", {})
 	var position: Dictionary = transform_data.get("position", {"x": 0.0, "y": 0.0, "z": 0.0})
 	var scale_data: Dictionary = transform_data.get("scale", {"x": 1.0, "y": 1.0, "z": 1.0})
+	var prop_class := str(prop.get("class", "prop"))
 
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(1.0, 1.0, 1.0)
@@ -312,5 +314,37 @@ func _make_prop_node(prop: Dictionary) -> Node3D:
 	instance.mesh = mesh
 	instance.position = Vector3(float(position.get("x", 0.0)), float(position.get("y", 0.0)) + 0.5, float(position.get("z", 0.0)))
 	instance.scale = Vector3(float(scale_data.get("x", 1.0)), float(scale_data.get("y", 1.0)), float(scale_data.get("z", 1.0)))
-	instance.material_override = _make_standard_material(Color(0.85, 0.75, 0.35))
+	instance.material_override = _make_standard_material(_prop_color(prop_class))
 	return instance
+
+
+func _zone_color(zone_class: String) -> Color:
+	match zone_class:
+		"safe_zone":
+			return Color(0.2, 0.78, 0.32)
+		"evac_point":
+			return Color(0.88, 0.82, 0.2)
+		"military_control":
+			return Color(0.24, 0.46, 0.92)
+		"outbreak_origin":
+			return Color(0.9, 0.22, 0.18)
+		"high_density_area":
+			return Color(0.72, 0.42, 0.9)
+		_:
+			return Color(0.9, 0.45, 0.2)
+
+
+func _prop_color(prop_class: String) -> Color:
+	match prop_class:
+		"campus_gate_marker":
+			return Color(0.78, 0.78, 0.82)
+		"checkpoint_marker":
+			return Color(0.26, 0.58, 0.95)
+		"safe_zone_marker":
+			return Color(0.24, 0.78, 0.35)
+		"evac_marker":
+			return Color(0.92, 0.84, 0.28)
+		"outbreak_marker":
+			return Color(0.92, 0.28, 0.2)
+		_:
+			return Color(0.85, 0.75, 0.35)

@@ -13,6 +13,35 @@ def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _read_optional_json(path: Path, default: Any) -> Any:
+    if not path.exists():
+        return default
+    return _read_json(path)
+
+
+ZONE_CLASS_ALIASES = {
+    "checkpoint": "military_control",
+    "checkpoint_zone": "military_control",
+    "evac": "evac_point",
+    "evac_point": "evac_point",
+    "high_density": "high_density_area",
+    "high_density_area": "high_density_area",
+    "military": "military_control",
+    "military_control": "military_control",
+    "outbreak": "outbreak_origin",
+    "outbreak_origin": "outbreak_origin",
+    "safe": "safe_zone",
+    "safe_zone": "safe_zone",
+}
+
+
+def _normalize_zone_class(value: str | None) -> str:
+    if not value:
+        return "generic_zone"
+    lowered = str(value).strip().lower()
+    return ZONE_CLASS_ALIASES.get(lowered, lowered or "generic_zone")
+
+
 def _iter_xy_points(roads: list[dict[str, Any]], buildings: list[dict[str, Any]]):
     for road in roads:
         for point in road.get("centerline", []):
@@ -131,14 +160,83 @@ def _default_world_center(bounds: dict[str, float]) -> dict[str, float]:
     }
 
 
+def _make_runtime_position_from_poi(poi: dict[str, Any]) -> dict[str, float]:
+    position = poi.get("position", {})
+    return {
+        "x": round(float(position.get("x", 0.0)), 3),
+        "y": 0.0,
+        "z": round(float(position.get("z", position.get("y", 0.0))), 3),
+    }
+
+
+def _build_zones_from_semantic_poi(poi_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    zones: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for poi in poi_items:
+        if not isinstance(poi, dict):
+            continue
+        runtime_zone = poi.get("runtime_zone")
+        if not isinstance(runtime_zone, dict):
+            continue
+        zone_id = str(runtime_zone.get("id") or f"zone_{poi.get('id', 'manual')}").strip()
+        if not zone_id or zone_id in seen_ids:
+            continue
+        seen_ids.add(zone_id)
+        zones.append(
+            {
+                "id": zone_id,
+                "class": _normalize_zone_class(str(runtime_zone.get("class") or "")),
+                "shape": str(runtime_zone.get("shape") or "point_hint"),
+                "center": _make_runtime_position_from_poi(poi),
+                "radius_m": round(float(runtime_zone.get("radius_m", 20.0)), 2),
+            }
+        )
+    return zones
+
+
+def _build_props_from_semantic_poi(poi_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    props: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for poi in poi_items:
+        if not isinstance(poi, dict):
+            continue
+        runtime_prop = poi.get("runtime_prop")
+        if not isinstance(runtime_prop, dict):
+            continue
+        prop_id = str(runtime_prop.get("id") or f"prop_{poi.get('id', 'manual')}").strip()
+        if not prop_id or prop_id in seen_ids:
+            continue
+        seen_ids.add(prop_id)
+        position = _make_runtime_position_from_poi(poi)
+        yaw_degrees = round(float(runtime_prop.get("yaw_degrees", 0.0)), 2)
+        scale_x = round(float(runtime_prop.get("scale_x", 1.0)), 3)
+        scale_y = round(float(runtime_prop.get("scale_y", 1.0)), 3)
+        scale_z = round(float(runtime_prop.get("scale_z", 1.0)), 3)
+        props.append(
+            {
+                "id": prop_id,
+                "class": str(runtime_prop.get("class") or "poi_marker"),
+                "transform": {
+                    "position": position,
+                    "rotation_degrees": {"x": 0.0, "y": yaw_degrees, "z": 0.0},
+                    "scale": {"x": scale_x, "y": scale_y, "z": scale_z},
+                },
+                "variant": str(runtime_prop.get("variant") or poi.get("name") or poi.get("id") or prop_id),
+                "blocks_movement": bool(runtime_prop.get("blocks_movement", False)),
+            }
+        )
+    return props
+
+
 def _build_zones_from_scenario(
     scenario: dict[str, Any],
     *,
     bounds: dict[str, float],
+    existing_zones: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     center = _default_world_center(bounds)
-    zones = []
-    seen = set()
+    zones = list(existing_zones or [])
+    seen = {str(zone.get("id")) for zone in zones if isinstance(zone, dict)}
     for spawn_rule in scenario.get("spawn_rules", []):
         zone_id = spawn_rule.get("zone_id")
         if not zone_id or zone_id in seen:
@@ -199,10 +297,16 @@ def build_runtime_pack(
     schema_version: str = "0.1.0",
 ) -> Path:
     manifest = _read_json(normalized_city_dir / "city_manifest.json")
-    roads = _read_json(normalized_city_dir / "roads.json")
-    buildings = _read_json(normalized_city_dir / "buildings.json")
-    barriers = _read_json(normalized_city_dir / "barriers.json")
-    landuse = _read_json(normalized_city_dir / "landuse.json")
+    layers = manifest.get("layers", {})
+    roads = _read_json(normalized_city_dir / layers.get("roads", "roads.json"))
+    walk_roads = _read_optional_json(
+        normalized_city_dir / layers.get("roads_walk", "roads_walk.json"),
+        [],
+    )
+    buildings = _read_json(normalized_city_dir / layers.get("buildings", "buildings.json"))
+    barriers = _read_json(normalized_city_dir / layers.get("barriers", "barriers.json"))
+    landuse = _read_json(normalized_city_dir / layers.get("landuse", "landuse.json"))
+    poi = _read_optional_json(normalized_city_dir / layers.get("poi", "poi.json"), [])
 
     pack_id = f"pack_{manifest['city_id']}"
     output_dir = output_root / pack_id
@@ -212,7 +316,8 @@ def build_runtime_pack(
     scenario = _read_json(scenario_path) if scenario_path else _default_scenario(pack_id)
     scenario["map_pack_id"] = pack_id
 
-    bounds = _compute_world_bounds(roads, buildings)
+    pedestrian_roads = walk_roads or roads
+    bounds = _compute_world_bounds(roads + pedestrian_roads, buildings)
     world = {
         "schema_version": schema_version,
         "bounds": bounds,
@@ -222,10 +327,11 @@ def build_runtime_pack(
         "barriers": barriers,
     }
     runtime_buildings = _build_runtime_buildings(buildings)
-    zones = _build_zones_from_scenario(scenario, bounds=bounds)
+    semantic_zones = _build_zones_from_semantic_poi(poi)
+    zones = _build_zones_from_scenario(scenario, bounds=bounds, existing_zones=semantic_zones)
     nav_vehicle = _road_to_graph(roads, mode="vehicle")
-    nav_pedestrian = _road_to_graph(roads, mode="pedestrian")
-    props = []
+    nav_pedestrian = _road_to_graph(pedestrian_roads, mode="pedestrian")
+    props = _build_props_from_semantic_poi(poi)
 
     write_json(output_dir / "world.json", world)
     write_json(output_dir / "buildings.json", runtime_buildings)

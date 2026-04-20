@@ -38,6 +38,10 @@
 
 ## 4. 主要公开数据源
 
+中国区补充来源、官方校区图、天地图、腾讯/百度等接入策略，另见：
+
+- [domestic-data-sources-and-local-research.md](/home/void0312/Workshop/urban-sim-lab/docs/domestic-data-sources-and-local-research.md)
+
 ### 4.1 OpenStreetMap / Overture Maps
 
 适合作为底层世界事实数据的核心来源。

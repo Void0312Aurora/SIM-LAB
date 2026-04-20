@@ -1,0 +1,25 @@
+{
+  "overlay_id": "chengdu_scu_jiangan_core_tdt_img_cia_z17",
+  "display_name": "TianDiTu WMTS img+cia z17",
+  "coordinate_space": "local_meters",
+  "image_path": "../../data/research/tdt/derived/chengdu_scu_jiangan_core_tdt_img_cia_z17.png",
+  "anchor_bounds": {
+    "min_x": -714.152,
+    "min_y": -317.686,
+    "max_x": 348.818,
+    "max_y": 740.091
+  },
+  "opacity": 0.72,
+  "notes": [
+    "Generated from TianDiTu WMTS tiles for local research preview.",
+    "This is a north-up reference mosaic, not project truth data.",
+    "Manual alignment may still be required for final preview tuning."
+  ],
+  "source": {
+    "provider": "TianDiTu",
+    "dataset": "WMTS",
+    "base_layer": "img",
+    "label_layer": "cia",
+    "zoom": 17
+  }
+}

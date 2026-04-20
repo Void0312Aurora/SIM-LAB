@@ -19,10 +19,10 @@ def configure_osmnx(config: OSMNormalizeConfig, raw_root: Path | None = None) ->
         ox.settings.cache_folder = str(raw_root / "osmnx_cache")
 
 
-def fetch_road_graph(config: OSMNormalizeConfig):
+def fetch_road_graph(config: OSMNormalizeConfig, *, network_type: str | None = None):
     return ox.graph.graph_from_bbox(
         config.bbox.as_tuple(),
-        network_type=config.network_type,
+        network_type=network_type or config.network_type,
         simplify=True,
         retain_all=True,
     )

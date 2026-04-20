@@ -22,12 +22,30 @@ export_presets.cfg
 data/raw/**
 data/normalized/**
 data/runtime/**
+data/research/**
 !data/README.md
+!data/research/
+!data/research/README.md
+!data/research/**/
+!data/research/**/README.md
 exports/
 reports/
+cache/
 
 # OS/editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+.playwright-cli/
+
+.env
+
+# CV lab
+image/cv/.venv-*/
+image/cv/.cache/
+image/cv/workspace/data/
+image/cv/workspace/outputs/
+
+# Local scratch
+output/
