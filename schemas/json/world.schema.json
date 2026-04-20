@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/world.schema.json",
+  "title": "Runtime World",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "bounds",
+    "surfaces",
+    "water",
+    "green",
+    "barriers"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "bounds": {
+      "$ref": "#/$defs/bounds"
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/surfaceArea"
+      }
+    },
+    "water": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/areaHint"
+      }
+    },
+    "green": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/areaHint"
+      }
+    },
+    "barriers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/barrier"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "vec2": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "items": false
+    },
+    "bounds": {
+      "type": "object",
+      "required": [
+        "min_x",
+        "max_x",
+        "min_z",
+        "max_z"
+      ],
+      "properties": {
+        "min_x": {
+          "type": "number"
+        },
+        "max_x": {
+          "type": "number"
+        },
+        "min_z": {
+          "type": "number"
+        },
+        "max_z": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "areaHint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "polygon": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/vec2"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "surfaceArea": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "polygon": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/vec2"
+          }
+        },
+        "source": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "barrier": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "geometry": {},
+        "blocks_pedestrians": {
+          "type": "boolean"
+        },
+        "blocks_vehicles": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

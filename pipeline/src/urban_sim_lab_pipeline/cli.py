@@ -7,7 +7,7 @@ import sys
 from .config import OSMNormalizeConfig
 from .normalize import normalize_osm_bbox
 from .runtime_pack import build_runtime_pack
-from .validation import validate_json_file
+from .validation import default_schema_root, validate_json_file, validate_runtime_pack_dir
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -54,6 +54,23 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         required=True,
         help="Path to a JSON document to validate.",
+    )
+
+    validate_pack_parser = subparsers.add_parser(
+        "validate-runtime-pack",
+        help="Validate a runtime pack directory against the known schema set.",
+    )
+    validate_pack_parser.add_argument(
+        "--pack-dir",
+        type=Path,
+        required=True,
+        help="Path to a runtime pack directory.",
+    )
+    validate_pack_parser.add_argument(
+        "--schema-root",
+        type=Path,
+        default=default_schema_root(),
+        help="Directory containing runtime pack schema files.",
     )
 
     pack_parser = subparsers.add_parser(
@@ -106,6 +123,11 @@ def main(argv: list[str] | None = None) -> int:
             scenario_path=args.scenario,
         )
         print(f"Runtime pack written to {output_dir}")
+        return 0
+
+    if args.command == "validate-runtime-pack":
+        validate_runtime_pack_dir(pack_dir=args.pack_dir, schema_root=args.schema_root)
+        print(f"Runtime pack validation OK: {args.pack_dir}")
         return 0
 
     parser.error(f"Unsupported command: {args.command}")

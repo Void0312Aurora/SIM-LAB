@@ -21,3 +21,13 @@
 - `project.godot`
 - `scenes/bootstrap.tscn`
 - `scripts/smoke_test.gd`
+- `scripts/runtime_pack_loader.gd`
+- `scripts/runtime_pack_smoke_test.gd`
+
+最小运行示例：
+
+```bash
+godot --headless --path /abs/path/to/runtime/godot \
+  --script res://scripts/runtime_pack_smoke_test.gd -- \
+  --pack-dir /abs/path/to/data/runtime/pack_id
+```

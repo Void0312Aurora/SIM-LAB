@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/buildings.schema.json",
+  "title": "Runtime Buildings",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/building"
+  },
+  "$defs": {
+    "vec2": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "items": false
+    },
+    "entrance": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "building": {
+      "type": "object",
+      "required": [
+        "id",
+        "mesh_ref",
+        "footprint",
+        "height_m",
+        "usage_class",
+        "entrances",
+        "capacity_estimate",
+        "occlusion_class"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "mesh_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "footprint": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/vec2"
+          }
+        },
+        "height_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "usage_class": {
+          "type": "string"
+        },
+        "entrances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entrance"
+          }
+        },
+        "capacity_estimate": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "occlusion_class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

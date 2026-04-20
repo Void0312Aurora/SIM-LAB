@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/zones.schema.json",
+  "title": "Runtime Zones",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/zone"
+  },
+  "$defs": {
+    "vec3": {
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "zone": {
+      "type": "object",
+      "required": [
+        "id",
+        "class",
+        "shape",
+        "center",
+        "radius_m"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string"
+        },
+        "center": {
+          "$ref": "#/$defs/vec3"
+        },
+        "radius_m": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

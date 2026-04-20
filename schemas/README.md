@@ -17,3 +17,7 @@
 - `json/runtime-pack-manifest.schema.json`
 - `json/nav-graph.schema.json`
 - `json/scenario.schema.json`
+- `json/world.schema.json`
+- `json/buildings.schema.json`
+- `json/zones.schema.json`
+- `json/props.schema.json`

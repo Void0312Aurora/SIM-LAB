@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/props.schema.json",
+  "title": "Runtime Props",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/prop"
+  },
+  "$defs": {
+    "vec3": {
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "transform": {
+      "type": "object",
+      "required": [
+        "position",
+        "rotation_degrees",
+        "scale"
+      ],
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/vec3"
+        },
+        "rotation_degrees": {
+          "$ref": "#/$defs/vec3"
+        },
+        "scale": {
+          "$ref": "#/$defs/vec3"
+        }
+      },
+      "additionalProperties": false
+    },
+    "prop": {
+      "type": "object",
+      "required": [
+        "id",
+        "class",
+        "transform",
+        "variant",
+        "blocks_movement"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "transform": {
+          "$ref": "#/$defs/transform"
+        },
+        "variant": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blocks_movement": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -26,6 +26,11 @@ python -m urban_sim_lab_pipeline validate-json \
 ```
 
 ```bash
+python -m urban_sim_lab_pipeline validate-runtime-pack \
+  --pack-dir /abs/path/to/data/runtime/pack_id
+```
+
+```bash
 python -m urban_sim_lab_pipeline build-runtime-pack \
   --normalized-city-dir /abs/path/to/data/normalized/city_id \
   --output-root /abs/path/to/data/runtime \
@@ -47,3 +52,4 @@ python -m urban_sim_lab_pipeline build-runtime-pack \
 
 - 使用 `schemas/json/*.schema.json` 做 JSON schema 校验
 - 从规范化城市目录构建最小 `runtime pack`
+- 对完整 runtime pack 目录做一键校验
