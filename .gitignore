@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.venv/
+*.egg-info/
+
+# Godot
+.godot/
+*.import
+export_presets.cfg
+
+# Blender
+*.blend1
+*.blend2
+
+# Data and generated artifacts
+data/raw/**
+data/normalized/**
+data/runtime/**
+!data/README.md
+exports/
+reports/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

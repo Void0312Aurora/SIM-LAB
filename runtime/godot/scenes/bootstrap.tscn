@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c4oyxq4w7m0h6"]
+
+[ext_resource type="Script" path="res://scripts/bootstrap.gd" id="1_bv2k6"]
+
+[node name="Bootstrap" type="Node3D"]
+script = ExtResource("1_bv2k6")

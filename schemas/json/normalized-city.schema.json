@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/normalized-city.schema.json",
+  "title": "Normalized City",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "city_id",
+    "display_name",
+    "local_crs",
+    "origin",
+    "units",
+    "bbox_wgs84",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "city_id": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "local_crs": {
+      "type": "string"
+    },
+    "origin": {
+      "$ref": "#/$defs/point2"
+    },
+    "units": {
+      "type": "string",
+      "const": "meters"
+    },
+    "bbox_wgs84": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceRef"
+      }
+    },
+    "compiled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "layers": {
+      "type": "object",
+      "properties": {
+        "roads": {
+          "type": "string"
+        },
+        "pedestrian_areas": {
+          "type": "string"
+        },
+        "buildings": {
+          "type": "string"
+        },
+        "landuse": {
+          "type": "string"
+        },
+        "poi": {
+          "type": "string"
+        },
+        "barriers": {
+          "type": "string"
+        },
+        "terrain": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "road_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "building_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "point2": {
+      "type": "object",
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceRef": {
+      "type": "object",
+      "required": [
+        "provider",
+        "dataset"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "dataset": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "license": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/scenario.schema.json",
+  "title": "Scenario",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "map_pack_id",
+    "factions",
+    "spawn_rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "map_pack_id": {
+      "type": "string"
+    },
+    "time_of_day": {
+      "type": "string",
+      "enum": [
+        "dawn",
+        "day",
+        "dusk",
+        "night"
+      ]
+    },
+    "factions": {
+      "type": "object",
+      "required": [
+        "civilians",
+        "infected",
+        "military"
+      ],
+      "properties": {
+        "civilians": {
+          "$ref": "#/$defs/factionConfig"
+        },
+        "infected": {
+          "$ref": "#/$defs/factionConfig"
+        },
+        "military": {
+          "$ref": "#/$defs/factionConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "spawn_rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/spawnRule"
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "factionConfig": {
+      "type": "object",
+      "required": [
+        "count"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "behavior_profile": {
+          "type": "string"
+        },
+        "squad_size": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "spawnRule": {
+      "type": "object",
+      "required": [
+        "faction",
+        "zone_id",
+        "count"
+      ],
+      "properties": {
+        "faction": {
+          "type": "string",
+          "enum": [
+            "civilians",
+            "infected",
+            "military"
+          ]
+        },
+        "zone_id": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "distribution": {
+          "type": "string",
+          "enum": [
+            "uniform",
+            "clustered"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

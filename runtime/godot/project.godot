@@ -1,0 +1,19 @@
+; Engine configuration file.
+; Minimal Godot project bootstrap for Urban Sim Lab.
+
+config_version=5
+
+[application]
+
+config/name="Urban Sim Lab"
+run/main_scene="res://scenes/bootstrap.tscn"
+config/features=PackedStringArray("4.6")
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

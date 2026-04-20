@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://urban-sim-lab.local/schemas/runtime-pack-manifest.schema.json",
+  "title": "Runtime Pack Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "pack_id",
+    "city_id",
+    "runtime_target",
+    "compiled_at",
+    "assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "pack_id": {
+      "type": "string"
+    },
+    "city_id": {
+      "type": "string"
+    },
+    "runtime_target": {
+      "type": "string",
+      "enum": [
+        "godot",
+        "engine_agnostic"
+      ]
+    },
+    "compiled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_manifest": {
+      "type": "string"
+    },
+    "coordinate_mapping": {
+      "type": "object",
+      "required": [
+        "horizontal_axes",
+        "up_axis",
+        "units"
+      ],
+      "properties": {
+        "horizontal_axes": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "items": false
+        },
+        "up_axis": {
+          "type": "string"
+        },
+        "units": {
+          "type": "string",
+          "const": "meters"
+        }
+      },
+      "additionalProperties": false
+    },
+    "assets": {
+      "type": "object",
+      "required": [
+        "world",
+        "buildings",
+        "zones",
+        "nav_pedestrian",
+        "nav_vehicle",
+        "scenario"
+      ],
+      "properties": {
+        "world": {
+          "type": "string"
+        },
+        "buildings": {
+          "type": "string"
+        },
+        "zones": {
+          "type": "string"
+        },
+        "nav_pedestrian": {
+          "type": "string"
+        },
+        "nav_vehicle": {
+          "type": "string"
+        },
+        "props": {
+          "type": "string"
+        },
+        "scenario": {
+          "type": "string"
+        },
+        "meshes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

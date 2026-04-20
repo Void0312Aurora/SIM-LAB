@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1.0",
+  "scenario_id": "scenario_street_block_outbreak",
+  "map_pack_id": "pack_demo_street_block",
+  "time_of_day": "day",
+  "factions": {
+    "civilians": {
+      "count": 180,
+      "behavior_profile": "panic_default"
+    },
+    "infected": {
+      "count": 12,
+      "behavior_profile": "aggressive_noise_seek"
+    },
+    "military": {
+      "count": 24,
+      "behavior_profile": "checkpoint_response",
+      "squad_size": 6
+    }
+  },
+  "spawn_rules": [
+    {
+      "faction": "civilians",
+      "zone_id": "zone_residential_core",
+      "count": 120,
+      "distribution": "uniform"
+    },
+    {
+      "faction": "civilians",
+      "zone_id": "zone_commercial_strip",
+      "count": 60,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "infected",
+      "zone_id": "zone_outbreak_origin",
+      "count": 12,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "military",
+      "zone_id": "zone_checkpoint_north",
+      "count": 12,
+      "distribution": "clustered"
+    },
+    {
+      "faction": "military",
+      "zone_id": "zone_checkpoint_south",
+      "count": 12,
+      "distribution": "clustered"
+    }
+  ],
+  "goals": [
+    "measure_evacuation_efficiency",
+    "measure_infection_spread",
+    "compare_checkpoint_effectiveness"
+  ]
+}
