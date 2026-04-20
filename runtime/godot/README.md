@@ -23,6 +23,8 @@
 - `scripts/smoke_test.gd`
 - `scripts/runtime_pack_loader.gd`
 - `scripts/runtime_pack_smoke_test.gd`
+- `scripts/replay_player.gd`
+- `scripts/scenario_replay_export_smoke_test.gd`
 
 最小运行示例：
 
@@ -43,8 +45,48 @@ godot --headless --path /abs/path/to/runtime/godot \
   --seed 1337
 ```
 
+第一版 replay 导出 smoke test：
+
+```bash
+godot --headless --path /abs/path/to/runtime/godot \
+  --script res://scripts/scenario_replay_export_smoke_test.gd -- \
+  --pack-dir /abs/path/to/data/runtime/pack_id \
+  --steps 300 \
+  --delta 1.0 \
+  --seed 1337 \
+  --replay-out /abs/path/to/reports/replays/pack_id_replay.json
+```
+
+可视化回放入口：
+
+```bash
+godot --path /abs/path/to/runtime/godot -- \
+  --pack-dir /abs/path/to/data/runtime/pack_id \
+  --steps 300 \
+  --delta 1.0 \
+  --seed 1337 \
+  --replay-speed 6.0
+```
+
 当前模拟是最小原型：
 
 - `civilians` 会沿步行图向最近的 `safe_zone / evac_point` 移动
 - `infected` 会沿步行图追逐最近的平民
 - `military` 会以检查点为基地，对响应半径内感染者进行追击
+- `SimulationCore` 可输出逐帧 replay、事件日志和 agent manifest
+- `ReplayPlayer` 会在常规 Godot 场景中回放实体轨迹
+
+当前回放控制：
+
+- `Space`: 播放 / 暂停
+- `R`: 从头重放
+- `+ / -`: 调整回放速度
+- `, / .`: 单帧前进 / 后退
+
+当前回放入口支持的常用参数：
+
+- `--run-sim false`: 只看静态 runtime pack，不执行模拟
+- `--replay-speed <float>`: 设置播放倍速
+- `--replay-stride <int>`: 每隔多少 simulation step 记录一帧
+- `--start-paused true`: 启动后暂停在首帧
+- `--replay-out <path>`: 启动场景时同步导出 replay JSON

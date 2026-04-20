@@ -24,12 +24,11 @@
 - OSM 到规范化城市包的最小导入链已跑通
 - 最小 runtime pack 构建已跑通
 - JSON schema 校验命令已接入
+- Godot 场景内可视化 replay 与 headless replay 导出已接通
 
 当前尚未进入的阶段：
 
 - Blender 自动资产导出
-- NPC 生成、移动和模拟规则
-- 回放与结果分析
 - 真实地图数据的首次人工真实性校核
 
 ## 3. 系统拆分
@@ -160,12 +159,12 @@
 - 可显示地面、建筑、区域提示
 - 可显示地图边界和导航图调试线
 - 已有 headless smoke test 可做基础回归
+- 已有正交俯视相机、光照和 HUD 观察入口
 
 剩余关键任务：
 
 - 将道路表面从 runtime pack 中显式可视化
 - 增加开关式调试图层控制
-- 建立相机、光照和观察入口
 - 为四川大学江安校区数据做首次真实性校核
 
 依赖：
@@ -201,10 +200,10 @@
 - 可基于 `nav_pedestrian` 做最小路径跟随
 - 可消费 `safe_zone / evac_point / military_control / outbreak_origin`
 - 已有 Godot headless 模拟 smoke test
+- 已有常规场景中的实体回放可视化入口
 
 剩余关键任务：
 
-- 将实体运动可视化接入常规场景而不只是 headless 脚本
 - 为不同 faction 增加更明确的状态切换与参数配置
 - 让 `nav_vehicle` 与军队/封锁逻辑发生更真实的耦合
 - 将模拟事件显式输出为可记录结果
@@ -274,7 +273,14 @@
 
 当前状态：
 
-- `未开始`
+- `已启动最小原型`
+
+当前已完成：
+
+- 最小感染扩散
+- 基于安全区和疏散点的平民撤离
+- 基于检查点的军队响应
+- 基于时间步推进的 headless 模拟闭环
 
 依赖：
 
@@ -301,7 +307,14 @@
 
 当前状态：
 
-- `未开始`
+- `已启动最小版本`
+
+当前已完成：
+
+- `SimulationCore` 可导出逐帧 replay payload
+- 已有事件日志和 agent manifest
+- 常规 Godot 场景可进行轨迹回放
+- 已有 replay export smoke test
 
 依赖：
 
@@ -318,19 +331,20 @@
 | `authoring.blender` | 仅 smoke test | 还未开始真正资产构建 |
 | `runtime.godot.loader` | 已有最小能力 | 已能读取 runtime pack 并做基础场景映射 |
 | `runtime.godot.simulation` | 已有最小能力 | 已有 headless 图上实体模拟与 smoke test |
-| `runtime.godot.replay` | 未开始 | 尚无回放与统计 |
+| `runtime.godot.replay` | 已有最小能力 | 已有逐帧 replay、事件记录与可视回放 |
 
 ## 6. 最近三阶段的实际工作重点
 
 当前最值得推进的顺序是：
 
-1. 把 headless 模拟结果可视化接入常规 Godot 场景
+1. 为 replay 增加热力图、时间轴过滤和结果对比
 2. 实现 Blender 建筑体块和道路 mesh 导出
-3. 为模拟补事件记录与结果分析
+3. 为模拟补更细的拥堵、恐慌和封锁规则
 
 原因：
 
-- 这三项一旦打通，项目就会从“图上数据原型”进入“可观察的游戏原型”
+- 第一项会把“可回放”推进到“可分析”
+- 后两项会把当前原型继续推向更像游戏的空间和行为表现
 
 ## 7. 当前结论
 
@@ -338,13 +352,13 @@
 
 - 数据底座已经建立
 - 运行时边界已经建立
-- 已进入“可运行模拟”的最小闭环阶段
-- 但还没有进入“具备正式可视表现和结果分析”的阶段
+- 已进入“可运行且可回放模拟”的最小闭环阶段
+- 但还没有进入“具备正式资产表现和分析工具”的阶段
 
 所以当前阶段最重要的不是继续扩想法，而是把：
 
 - runtime pack
-- Godot simulation
+- replay analysis
 - Blender mesh/export
 
 这三者连接起来。

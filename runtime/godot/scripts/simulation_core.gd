@@ -19,7 +19,8 @@ func simulate(
 	pack: Dictionary,
 	steps: int = 300,
 	delta_seconds: float = 1.0,
-	seed: int = DEFAULT_RANDOM_SEED
+	seed: int = DEFAULT_RANDOM_SEED,
+	options: Dictionary = {}
 ) -> Dictionary:
 	_path_cache.clear()
 	_next_agent_serial = 0
@@ -31,34 +32,69 @@ func simulate(
 			"error": "nav_pedestrian graph is empty"
 		}
 
+	var record_replay: bool = bool(options.get("record_replay", false))
+	var replay_stride: int = max(1, int(options.get("replay_stride", 1)))
 	var zones := _build_zone_context(pack.get("zones", []), graph)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var agents := _spawn_agents(pack.get("scenario", {}), graph, zones, rng)
 	var metrics := _make_metrics(pack.get("scenario", {}), agents, steps, delta_seconds, seed)
 	var snapshots: Array = [_capture_snapshot(0, agents, metrics)]
+	var replay := {}
+	if record_replay:
+		replay = _make_replay_shell(pack, steps, delta_seconds, seed, replay_stride)
+		(replay["frames"] as Array).append(_capture_replay_frame(0, 0.0, agents, metrics))
 	var completed_steps := 0
 
 	for step in range(steps):
 		_update_targets(agents, graph, zones, step)
 		_advance_agents(agents, graph, delta_seconds)
-		var converted_agents := _resolve_step(agents, graph, zones, metrics)
+		var step_resolution := _resolve_step(agents, graph, zones, metrics, step + 1)
+		var converted_agents: Array = step_resolution.get("converted_agents", [])
 		for converted_agent in converted_agents:
 			agents.append(converted_agent)
 		completed_steps = step + 1
 		if completed_steps % SNAPSHOT_INTERVAL_STEPS == 0 or completed_steps == steps:
 			snapshots.append(_capture_snapshot(completed_steps, agents, metrics))
-		if _should_stop(agents):
+
+		var stopped_early := _should_stop(agents)
+		if record_replay:
+			var replay_events: Array = replay.get("events", [])
+			replay_events.append_array(step_resolution.get("events", []))
+			if completed_steps % replay_stride == 0 or completed_steps == steps or stopped_early:
+				(replay["frames"] as Array).append(
+					_capture_replay_frame(
+						completed_steps,
+						completed_steps * delta_seconds,
+						agents,
+						metrics
+					)
+				)
+
+		if stopped_early:
 			metrics["stopped_early"] = true
 			break
 
 	metrics["completed_step_count"] = completed_steps
 	_finalize_metrics(metrics, agents)
-	return {
+
+	var result := {
 		"ok": true,
 		"metrics": metrics,
 		"snapshots": snapshots
 	}
+	if record_replay:
+		_finalize_replay(
+			replay,
+			agents,
+			metrics,
+			pack.get("scenario", {}),
+			pack.get("manifest", {}),
+			completed_steps,
+			delta_seconds
+		)
+		result["replay"] = replay
+	return result
 
 
 func _build_graph(graph_payload: Dictionary) -> Dictionary:
@@ -345,13 +381,30 @@ func _advance_agent(agent: Dictionary, graph: Dictionary, delta_seconds: float) 
 	agent["path"] = path
 
 
-func _resolve_step(agents: Array, graph: Dictionary, zones: Dictionary, metrics: Dictionary) -> Array:
-	_resolve_evacuations(agents, zones.get("goal_zones", []), metrics)
-	_resolve_neutralizations(agents, metrics)
-	return _resolve_infections(agents, graph, metrics)
+func _resolve_step(
+	agents: Array,
+	graph: Dictionary,
+	zones: Dictionary,
+	metrics: Dictionary,
+	step: int
+) -> Dictionary:
+	var step_events: Array = []
+	_resolve_evacuations(agents, zones.get("goal_zones", []), metrics, step, step_events)
+	_resolve_neutralizations(agents, metrics, step, step_events)
+	var converted_agents := _resolve_infections(agents, graph, metrics, step, step_events)
+	return {
+		"converted_agents": converted_agents,
+		"events": step_events
+	}
 
 
-func _resolve_evacuations(agents: Array, goal_zones: Array, metrics: Dictionary) -> void:
+func _resolve_evacuations(
+	agents: Array,
+	goal_zones: Array,
+	metrics: Dictionary,
+	step: int,
+	step_events: Array
+) -> void:
 	if goal_zones.is_empty():
 		return
 	for agent in agents:
@@ -366,10 +419,26 @@ func _resolve_evacuations(agents: Array, goal_zones: Array, metrics: Dictionary)
 				agent["active"] = false
 				agent["state"] = "evacuated"
 				metrics["evacuated_count"] = int(metrics.get("evacuated_count", 0)) + 1
+				step_events.append(
+					_make_replay_event(
+						step,
+						"evacuated",
+						agent,
+						{
+							"zone_id": str(zone.get("id", "")),
+							"target_zone_id": str(agent.get("target_zone_id", ""))
+						}
+					)
+				)
 				break
 
 
-func _resolve_neutralizations(agents: Array, metrics: Dictionary) -> void:
+func _resolve_neutralizations(
+	agents: Array,
+	metrics: Dictionary,
+	step: int,
+	step_events: Array
+) -> void:
 	var active_military := _active_agents_for_faction(agents, "military")
 	var active_infected := _active_agents_for_faction(agents, "infected")
 	if active_military.is_empty() or active_infected.is_empty():
@@ -392,9 +461,16 @@ func _resolve_neutralizations(agents: Array, metrics: Dictionary) -> void:
 			agent["active"] = false
 			agent["state"] = "neutralized"
 			metrics["neutralized_count"] = int(metrics.get("neutralized_count", 0)) + 1
+			step_events.append(_make_replay_event(step, "neutralized", agent))
 
 
-func _resolve_infections(agents: Array, graph: Dictionary, metrics: Dictionary) -> Array:
+func _resolve_infections(
+	agents: Array,
+	graph: Dictionary,
+	metrics: Dictionary,
+	step: int,
+	step_events: Array
+) -> Array:
 	var active_civilians := _active_agents_for_faction(agents, "civilians")
 	var active_infected := _active_agents_for_faction(agents, "infected")
 	if active_civilians.is_empty() or active_infected.is_empty():
@@ -419,7 +495,21 @@ func _resolve_infections(agents: Array, graph: Dictionary, metrics: Dictionary) 
 			agent["active"] = false
 			agent["state"] = "infected"
 			metrics["converted_count"] = int(metrics.get("converted_count", 0)) + 1
-			converted_agents.append(_make_converted_infected(agent, graph))
+			var converted_agent := _make_converted_infected(agent, graph)
+			converted_agents.append(converted_agent)
+			step_events.append(
+				_make_replay_event(
+					step,
+					"converted",
+					agent,
+					{
+						"spawned_agent_id": str(converted_agent.get("id", "")),
+						"spawned_faction": str(converted_agent.get("faction", "")),
+						"spawned_state": str(converted_agent.get("state", "")),
+						"spawned_position": _vec3_to_dict(converted_agent.get("position", Vector3.ZERO))
+					}
+				)
+			)
 
 	return converted_agents
 
@@ -457,6 +547,115 @@ func _capture_snapshot(step: int, agents: Array, metrics: Dictionary) -> Diction
 		"evacuated_count": int(metrics.get("evacuated_count", 0)),
 		"converted_count": int(metrics.get("converted_count", 0)),
 		"neutralized_count": int(metrics.get("neutralized_count", 0))
+	}
+
+
+func _make_replay_shell(
+	pack: Dictionary,
+	steps: int,
+	delta_seconds: float,
+	seed: int,
+	replay_stride: int
+) -> Dictionary:
+	return {
+		"schema_version": "0.1.0",
+		"pack_id": str(pack.get("manifest", {}).get("pack_id", "")),
+		"scenario_id": str(pack.get("scenario", {}).get("scenario_id", "")),
+		"recording": {
+			"configured_step_count": steps,
+			"delta_seconds": delta_seconds,
+			"random_seed": seed,
+			"frame_stride_steps": replay_stride
+		},
+		"frames": [],
+		"events": []
+	}
+
+
+func _capture_replay_frame(step: int, time_seconds: float, agents: Array, metrics: Dictionary) -> Dictionary:
+	var active_counts := _count_active_agents_by_faction(agents)
+	return {
+		"step": step,
+		"time_seconds": snappedf(time_seconds, 0.001),
+		"counts": {
+			"active_civilians": int(active_counts.get("civilians", 0)),
+			"active_infected": int(active_counts.get("infected", 0)),
+			"active_military": int(active_counts.get("military", 0)),
+			"evacuated_count": int(metrics.get("evacuated_count", 0)),
+			"converted_count": int(metrics.get("converted_count", 0)),
+			"neutralized_count": int(metrics.get("neutralized_count", 0))
+		},
+		"agents": _serialize_agents_for_replay(agents)
+	}
+
+
+func _serialize_agents_for_replay(agents: Array) -> Array:
+	var serialized: Array = []
+	for agent in agents:
+		if not agent is Dictionary:
+			continue
+		serialized.append(
+			{
+				"id": str(agent.get("id", "")),
+				"faction": str(agent.get("faction", "")),
+				"state": str(agent.get("state", "")),
+				"active": bool(agent.get("active", false)),
+				"position": _vec3_to_dict(agent.get("position", Vector3.ZERO)),
+				"current_node_id": str(agent.get("current_node_id", "")),
+				"target_node_id": str(agent.get("target_node_id", "")),
+				"spawn_zone_id": str(agent.get("spawn_zone_id", "")),
+				"home_zone_id": str(agent.get("home_zone_id", ""))
+			}
+		)
+	return serialized
+
+
+func _build_agent_manifest(agents: Array) -> Array:
+	var manifest: Array = []
+	for agent in agents:
+		if not agent is Dictionary:
+			continue
+		manifest.append(
+			{
+				"id": str(agent.get("id", "")),
+				"faction": str(agent.get("faction", "")),
+				"spawn_zone_id": str(agent.get("spawn_zone_id", "")),
+				"home_zone_id": str(agent.get("home_zone_id", ""))
+			}
+		)
+	return manifest
+
+
+func _make_replay_event(step: int, event_type: String, agent: Dictionary, extra: Dictionary = {}) -> Dictionary:
+	var event := {
+		"step": step,
+		"type": event_type,
+		"agent_id": str(agent.get("id", "")),
+		"faction": str(agent.get("faction", "")),
+		"state": str(agent.get("state", "")),
+		"position": _vec3_to_dict(agent.get("position", Vector3.ZERO))
+	}
+	event.merge(extra, true)
+	return event
+
+
+func _finalize_replay(
+	replay: Dictionary,
+	agents: Array,
+	metrics: Dictionary,
+	scenario: Dictionary,
+	manifest: Dictionary,
+	completed_steps: int,
+	delta_seconds: float
+) -> void:
+	replay["completed_step_count"] = completed_steps
+	replay["duration_seconds"] = snappedf(completed_steps * delta_seconds, 0.001)
+	replay["metrics"] = metrics.duplicate(true)
+	replay["agent_manifest"] = _build_agent_manifest(agents)
+	replay["map_manifest"] = {
+		"pack_id": str(manifest.get("pack_id", "")),
+		"schema_version": str(manifest.get("schema_version", "")),
+		"scenario_id": str(scenario.get("scenario_id", ""))
 	}
 
 
@@ -683,6 +882,14 @@ func _safe_ratio(numerator: int, denominator: int) -> float:
 	if denominator <= 0:
 		return 0.0
 	return snappedf(float(numerator) / float(denominator), 0.0001)
+
+
+func _vec3_to_dict(source: Vector3) -> Dictionary:
+	return {
+		"x": snappedf(source.x, 0.001),
+		"y": snappedf(source.y, 0.001),
+		"z": snappedf(source.z, 0.001)
+	}
 
 
 func _dict_to_vec3(source: Dictionary) -> Vector3:
