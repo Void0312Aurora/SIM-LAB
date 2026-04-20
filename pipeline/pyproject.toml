@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "geopandas>=1.0.0",
+  "jsonschema>=4.23.0",
   "networkx>=3.3",
   "osmnx>=2.0.0",
   "pandas>=2.2.0",

@@ -19,6 +19,19 @@ python -m urban_sim_lab_pipeline normalize-osm \
   --raw-root /abs/path/to/data/raw
 ```
 
+```bash
+python -m urban_sim_lab_pipeline validate-json \
+  --schema /abs/path/to/schema.json \
+  --input /abs/path/to/document.json
+```
+
+```bash
+python -m urban_sim_lab_pipeline build-runtime-pack \
+  --normalized-city-dir /abs/path/to/data/normalized/city_id \
+  --output-root /abs/path/to/data/runtime \
+  --scenario /abs/path/to/scenario.json
+```
+
 推荐先用这个样例配置：
 
 - `../configs/areas/example_shanghai_people_square.json`
@@ -29,3 +42,8 @@ python -m urban_sim_lab_pipeline normalize-osm \
 - `roads.json`
 - `buildings.json`
 - 空占位层文件：`pedestrian_areas.json`、`landuse.json`、`poi.json`、`barriers.json`
+
+当前还支持：
+
+- 使用 `schemas/json/*.schema.json` 做 JSON schema 校验
+- 从规范化城市目录构建最小 `runtime pack`
