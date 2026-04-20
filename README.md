@@ -14,6 +14,8 @@
 第一版资产清单见 [docs/asset-inventory.md](docs/asset-inventory.md)。
 技术栈与架构文档见 [docs/tech-stack-and-architecture.md](docs/tech-stack-and-architecture.md)。
 数据模型与 schema 设计见 [docs/data-model-and-schemas.md](docs/data-model-and-schemas.md)。
+工程阶段计划见 [docs/implementation-plan.md](docs/implementation-plan.md)。
+当前冻结基线见 [docs/frozen-baseline.md](docs/frozen-baseline.md)。
 
 当前仓库结构：
 

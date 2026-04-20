@@ -34,7 +34,7 @@ python -m urban_sim_lab_pipeline build-runtime-pack \
 
 推荐先用这个样例配置：
 
-- `../configs/areas/example_shanghai_people_square.json`
+- `../configs/areas/chengdu_scu_jiangan_core.json`
 
 当前输出：
 

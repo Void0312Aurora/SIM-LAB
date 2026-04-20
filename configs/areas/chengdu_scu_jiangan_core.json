@@ -1,0 +1,14 @@
+{
+  "city_id": "chengdu_scu_jiangan_core",
+  "display_name": "Chengdu SCU Jiang'an Campus Core",
+  "bbox": {
+    "west": 103.9995,
+    "south": 30.5531,
+    "east": 104.0099,
+    "north": 30.5621
+  },
+  "network_type": "drive",
+  "overpass_timeout": 180,
+  "overpass_memory_mb": 1024,
+  "use_cache": true
+}
