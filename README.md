@@ -16,6 +16,7 @@
 空间拓扑优先的 CV 工具与部署方案见 [docs/cv-space-topology-and-tooling.md](docs/cv-space-topology-and-tooling.md)。
 江安核心区手工语义锚点样例见 [configs/enhancements/chengdu_scu_jiangan_manual_semantics_v1.local.json](configs/enhancements/chengdu_scu_jiangan_manual_semantics_v1.local.json)。
 江安核心区示例场景见 [scenarios/chengdu_scu_jiangan_core_outbreak_mvp.json](scenarios/chengdu_scu_jiangan_core_outbreak_mvp.json)。
+Godot headless 运行包与模拟验证入口见 [runtime/godot/README.md](runtime/godot/README.md)。
 第一版资产清单见 [docs/asset-inventory.md](docs/asset-inventory.md)。
 技术栈与架构文档见 [docs/tech-stack-and-architecture.md](docs/tech-stack-and-architecture.md)。
 数据模型与 schema 设计见 [docs/data-model-and-schemas.md](docs/data-model-and-schemas.md)。

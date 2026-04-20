@@ -31,3 +31,20 @@ godot --headless --path /abs/path/to/runtime/godot \
   --script res://scripts/runtime_pack_smoke_test.gd -- \
   --pack-dir /abs/path/to/data/runtime/pack_id
 ```
+
+第一版场景模拟 smoke test：
+
+```bash
+godot --headless --path /abs/path/to/runtime/godot \
+  --script res://scripts/scenario_simulation_smoke_test.gd -- \
+  --pack-dir /abs/path/to/data/runtime/pack_id \
+  --steps 300 \
+  --delta 1.0 \
+  --seed 1337
+```
+
+当前模拟是最小原型：
+
+- `civilians` 会沿步行图向最近的 `safe_zone / evac_point` 移动
+- `infected` 会沿步行图追逐最近的平民
+- `military` 会以检查点为基地，对响应半径内感染者进行追击

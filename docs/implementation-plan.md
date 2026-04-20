@@ -193,7 +193,21 @@
 
 当前状态：
 
-- `未开始`
+- `已启动，最小图上实体模拟已接通`
+
+当前已完成：
+
+- 可从 `scenario.spawn_rules` 生成平民、感染者、军队三类实体
+- 可基于 `nav_pedestrian` 做最小路径跟随
+- 可消费 `safe_zone / evac_point / military_control / outbreak_origin`
+- 已有 Godot headless 模拟 smoke test
+
+剩余关键任务：
+
+- 将实体运动可视化接入常规场景而不只是 headless 脚本
+- 为不同 faction 增加更明确的状态切换与参数配置
+- 让 `nav_vehicle` 与军队/封锁逻辑发生更真实的耦合
+- 将模拟事件显式输出为可记录结果
 
 依赖：
 
@@ -220,7 +234,20 @@
 
 当前状态：
 
-- `未开始`
+- `已启动最小原型`
+
+当前已完成：
+
+- 最小感染扩散
+- 基于安全区和疏散点的平民撤离
+- 基于检查点的军队响应
+- 基于时间步推进的 headless 模拟闭环
+
+剩余关键任务：
+
+- 加入恐慌、拥堵、封锁失败等更细行为规则
+- 让感染、拦截、疏散对路径选择产生反馈
+- 输出可比较的模拟结果指标
 
 依赖：
 
@@ -289,21 +316,21 @@
 | `pipeline.derive` | 未开始 | 语义层仍未正式实现 |
 | `pipeline.runtime_pack` | 已有最小能力 | 已能输出最小 runtime pack |
 | `authoring.blender` | 仅 smoke test | 还未开始真正资产构建 |
-| `runtime.godot.loader` | 未开始 | 还未读取 runtime pack |
-| `runtime.godot.simulation` | 未开始 | 尚无实体系统 |
+| `runtime.godot.loader` | 已有最小能力 | 已能读取 runtime pack 并做基础场景映射 |
+| `runtime.godot.simulation` | 已有最小能力 | 已有 headless 图上实体模拟与 smoke test |
 | `runtime.godot.replay` | 未开始 | 尚无回放与统计 |
 
 ## 6. 最近三阶段的实际工作重点
 
 当前最值得推进的顺序是：
 
-1. 完成 `world/buildings/zones/props` schema
-2. 实现 Godot runtime pack loader
-3. 实现 Blender 建筑体块和道路 mesh 导出
+1. 把 headless 模拟结果可视化接入常规 Godot 场景
+2. 实现 Blender 建筑体块和道路 mesh 导出
+3. 为模拟补事件记录与结果分析
 
 原因：
 
-- 这三项一旦打通，项目就会从“数据工程原型”进入“真正可见的游戏原型”
+- 这三项一旦打通，项目就会从“图上数据原型”进入“可观察的游戏原型”
 
 ## 7. 当前结论
 
@@ -311,12 +338,13 @@
 
 - 数据底座已经建立
 - 运行时边界已经建立
-- 但还没有进入“可见场景”和“可运行模拟”的闭环阶段
+- 已进入“可运行模拟”的最小闭环阶段
+- 但还没有进入“具备正式可视表现和结果分析”的阶段
 
 所以当前阶段最重要的不是继续扩想法，而是把：
 
-- schema
 - runtime pack
-- Godot loader
+- Godot simulation
+- Blender mesh/export
 
 这三者连接起来。
